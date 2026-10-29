@@ -1,0 +1,1599 @@
+<title>Angular Senior Dev Reviewer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap">
+
+<style>
+/* =============================================
+   DESIGN PLAN
+   Layout: Sticky top-nav tabs → scrollable panel content
+   Color: Cool slate-navy base, electric indigo accent, amber for warnings
+   Type: Inter (UI/body), JetBrains Mono (code)
+   ============================================= */
+
+:root {
+  --bg:        #f8f9fc;
+  --bg2:       #eef0f7;
+  --surface:   #ffffff;
+  --border:    #dde1ef;
+  --fg:        #1a1d2e;
+  --fg2:       #4a4f6a;
+  --fg3:       #8589a3;
+  --accent:    #4f46e5;
+  --accent-s:  #e0deff;
+  --amber:     #d97706;
+  --amber-s:   #fef3c7;
+  --green:     #059669;
+  --green-s:   #d1fae5;
+  --red:       #dc2626;
+  --red-s:     #fee2e2;
+  --code-bg:   #1e2030;
+  --code-fg:   #c8d3f5;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:        #0f1117;
+    --bg2:       #161924;
+    --surface:   #1c2030;
+    --border:    #2a2f45;
+    --fg:        #e4e8f7;
+    --fg2:       #9098b8;
+    --fg3:       #555d7a;
+    --accent:    #7c74f5;
+    --accent-s:  #1e1a4a;
+    --amber:     #fbbf24;
+    --amber-s:   #2a1f00;
+    --green:     #34d399;
+    --green-s:   #002820;
+    --red:       #f87171;
+    --red-s:     #2a0808;
+    --code-bg:   #0d0f18;
+    --code-fg:   #c8d3f5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:        #0f1117;
+  --bg2:       #161924;
+  --surface:   #1c2030;
+  --border:    #2a2f45;
+  --fg:        #e4e8f7;
+  --fg2:       #9098b8;
+  --fg3:       #555d7a;
+  --accent:    #7c74f5;
+  --accent-s:  #1e1a4a;
+  --amber:     #fbbf24;
+  --amber-s:   #2a1f00;
+  --green:     #34d399;
+  --green-s:   #002820;
+  --red:       #f87171;
+  --red-s:     #2a0808;
+  --code-bg:   #0d0f18;
+  --code-fg:   #c8d3f5;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 15px;
+  line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+}
+
+/* ---- TOP BAR ---- */
+.topbar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 50;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+}
+.topbar::-webkit-scrollbar { display: none; }
+
+.logo {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent);
+  white-space: nowrap;
+  padding-right: 20px;
+  border-right: 1px solid var(--border);
+  margin-right: 8px;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+.logo span { color: var(--fg3); font-weight: 400; }
+
+.tab-btn {
+  flex-shrink: 0;
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg3);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--fg); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ---- PANELS ---- */
+.panel { display: none; padding-block: 28px; }
+.panel.active { display: block; }
+
+.panel-header {
+  margin-bottom: 24px;
+}
+.panel-header h2 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+.panel-header p { color: var(--fg2); margin-top: 4px; font-size: 14px; }
+
+/* ---- REVIEWER ---- */
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.topic-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.topic-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+.topic-card-header:hover { background: var(--bg2); }
+
+.topic-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.topic-title {
+  font-weight: 600;
+  font-size: 14px;
+  flex: 1;
+  min-width: 0;
+}
+.topic-chevron {
+  color: var(--fg3);
+  font-size: 12px;
+  transition: transform .2s;
+  flex-shrink: 0;
+}
+.topic-card.open .topic-chevron { transform: rotate(180deg); }
+
+.topic-body {
+  display: none;
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--border);
+}
+.topic-card.open .topic-body { display: block; }
+
+.concept {
+  margin-top: 12px;
+}
+.concept-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.concept p { font-size: 13px; color: var(--fg2); line-height: 1.6; }
+
+pre, code {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.code-block {
+  background: var(--code-bg);
+  color: var(--code-fg);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.kw { color: #bb9af7; }
+.dec { color: #7dcfff; }
+.str { color: #9ece6a; }
+.cmt { color: #565f89; }
+.fn  { color: #7aa2f7; }
+.cls { color: #e0af68; }
+
+.pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  margin: 2px 2px 2px 0;
+}
+.pill-blue { background: var(--accent-s); color: var(--accent); }
+.pill-amber { background: var(--amber-s); color: var(--amber); }
+.pill-green { background: var(--green-s); color: var(--green); }
+
+/* ---- QUIZ ---- */
+.quiz-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width .3s ease;
+}
+.progress-label { font-size: 13px; color: var(--fg3); white-space: nowrap; }
+
+.quiz-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 700px;
+}
+
+.quiz-category {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.quiz-q {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  text-wrap: balance;
+  line-height: 1.5;
+}
+
+.quiz-options { display: flex; flex-direction: column; gap: 10px; }
+
+.quiz-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  text-align: left;
+  background: var(--bg);
+  font-size: 14px;
+  color: var(--fg);
+  font-family: inherit;
+  width: 100%;
+}
+.quiz-option:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-s); }
+.quiz-option.correct { border-color: var(--green); background: var(--green-s); color: var(--green); }
+.quiz-option.wrong   { border-color: var(--red);   background: var(--red-s);   color: var(--red); }
+
+.opt-letter {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.quiz-option.correct .opt-letter { background: var(--green); color: #fff; }
+.quiz-option.wrong   .opt-letter { background: var(--red);   color: #fff; }
+
+.quiz-explanation {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--bg2);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  font-size: 13px;
+  color: var(--fg2);
+  display: none;
+}
+.quiz-explanation.show { display: block; }
+
+.quiz-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity .15s;
+  font-family: inherit;
+}
+.btn:disabled { opacity: .4; cursor: default; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { opacity: .88; }
+.btn-ghost { background: var(--bg2); color: var(--fg); border: 1px solid var(--border); }
+.btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+
+.score-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 480px;
+}
+.score-ring {
+  width: 120px; height: 120px;
+  margin: 0 auto 20px;
+}
+.score-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.score-big {
+  font-size: 36px; font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.score-label { color: var(--fg2); font-size: 14px; margin-top: 4px; }
+.score-breakdown { display: flex; gap: 16px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+.score-stat { text-align: center; }
+.score-stat .num { font-size: 20px; font-weight: 700; }
+.score-stat .lbl { font-size: 12px; color: var(--fg3); }
+
+/* ---- CODING EXAM ---- */
+.exam-intro {
+  background: var(--amber-s);
+  border: 1px solid var(--amber);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: var(--amber);
+  margin-bottom: 24px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.coding-problems { display: flex; flex-direction: column; gap: 16px; }
+
+.problem-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.problem-header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.problem-header:hover { background: var(--bg2); }
+
+.problem-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.problem-title { font-weight: 600; font-size: 15px; flex: 1; min-width: 0; }
+.problem-diff {
+  font-size: 11px; font-weight: 700; padding: 3px 10px;
+  border-radius: 20px; flex-shrink: 0;
+}
+.diff-easy   { background: var(--green-s); color: var(--green); }
+.diff-medium { background: var(--amber-s); color: var(--amber); }
+.diff-hard   { background: var(--red-s);   color: var(--red); }
+
+.problem-body {
+  display: none;
+  padding: 0 20px 20px;
+  border-top: 1px solid var(--border);
+}
+.problem-card.open .problem-body { display: block; }
+.problem-card.open .problem-header { background: var(--bg2); }
+
+.problem-desc {
+  font-size: 14px;
+  color: var(--fg2);
+  margin-top: 14px;
+  line-height: 1.7;
+}
+.problem-desc strong { color: var(--fg); }
+
+.problem-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--fg3);
+  margin: 16px 0 6px;
+}
+
+.editor-area {
+  width: 100%;
+  min-height: 220px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  resize: vertical;
+  line-height: 1.6;
+  outline: none;
+  transition: border-color .15s;
+  tab-size: 2;
+}
+.editor-area:focus { border-color: var(--accent); }
+
+.solution-toggle {
+  margin-top: 12px;
+}
+.solution-area {
+  margin-top: 10px;
+  display: none;
+}
+.solution-area.show { display: block; }
+
+.criteria-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+.criteria-list li {
+  font-size: 13px;
+  color: var(--fg2);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.criteria-list li::before {
+  content: '✓';
+  color: var(--accent);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ---- CHEATSHEET ---- */
+.cheat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.cheat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.cheat-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.cheat-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.cheat-key {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.cheat-val { color: var(--fg2); line-height: 1.4; }
+
+/* ---- MISC ---- */
+.inline-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--accent);
+}
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+@media (max-width: 500px) {
+  .quiz-card, .score-card { padding: 18px 14px; }
+  .problem-header { padding: 14px; }
+  .problem-body { padding: 0 14px 14px; }
+}
+</style>
+
+<div class="topbar">
+  <div class="logo">Angular<span>/Senior</span></div>
+  <button class="tab-btn active" onclick="switchTab('reviewer')">📚 Reviewer</button>
+  <button class="tab-btn" onclick="switchTab('quiz')">🧠 Theory Exam</button>
+  <button class="tab-btn" onclick="switchTab('coding')">💻 Coding Exam</button>
+  <button class="tab-btn" onclick="switchTab('cheatsheet')">⚡ Cheatsheet</button>
+</div>
+
+<!-- ===================== REVIEWER ===================== -->
+<div id="panel-reviewer" class="panel active">
+  <div class="panel-header">
+    <h2>Holistic Angular Reviewer</h2>
+    <p>Senior-level concepts, patterns, and gotchas. Click any topic to expand.</p>
+  </div>
+  <div class="topic-grid">
+
+    <!-- Components & Templates -->
+    <div class="topic-card" id="topic-0">
+      <div class="topic-card-header" onclick="toggleTopic(0)">
+        <div class="topic-icon">🧩</div>
+        <div class="topic-title">Components &amp; Templates</div>
+        <div class="topic-chevron">▼</div>
+      </div>
+      <div class="topic-body">
+        <div class="concept">
+          <div class="concept-label">Change Detection Strategies</div>
+          <p><span class="pill pill-blue">Default</span> checks every component on each cycle. <span class="pill pill-amber">OnPush</span> only checks when input references change, an event fires, or an observable emits via <span class="inline-code">async</span> pipe. Use <span class="inline-code">OnPush</span> for performance in large apps.</p>
+          <div class="code-block"><span class="kw">@Component</span>({
+  changeDetection: <span class="cls">ChangeDetectionStrategy</span>.OnPush
+})
+<span class="kw">class</span> <span class="cls">MyComponent</span> {
+  <span class="cmt">// trigger CD manually when needed:</span>
+  <span class="fn">constructor</span>(<span class="kw">private</span> cdr: <span class="cls">ChangeDetectorRef</span>) {}
+  <span class="fn">refresh</span>() { <span class="kw">this</span>.cdr.<span class="fn">markForCheck</span>(); }
+}</div>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Lifecycle Hooks (in order)</div>
+          <p><span class="inline-code">ngOnChanges</span> → <span class="inline-code">ngOnInit</span> → <span class="inline-code">ngDoCheck</span> → <span class="inline-code">ngAfterContentInit</span> → <span class="inline-code">ngAfterContentChecked</span> → <span class="inline-code">ngAfterViewInit</span> → <span class="inline-code">ngAfterViewChecked</span> → <span class="inline-code">ngOnDestroy</span>. Know which fire once vs every cycle.</p>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Standalone Components (v15+)</div>
+          <p>No NgModule needed. Set <span class="inline-code">standalone: true</span>, import dependencies directly in <span class="inline-code">imports: []</span>. Preferred for new code.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dependency Injection -->
+    <div class="topic-card" id="topic-1">
+      <div class="topic-card-header" onclick="toggleTopic(1)">
+        <div class="topic-icon">💉</div>
+        <div class="topic-title">Dependency Injection</div>
+        <div class="topic-chevron">▼</div>
+      </div>
+      <div class="topic-body">
+        <div class="concept">
+          <div class="concept-label">Injector Hierarchy</div>
+          <p>Angular has a tree of injectors: <strong>Root</strong> (app-wide singleton) → <strong>Module</strong> → <strong>Component</strong> (new instance per component tree branch). <span class="inline-code">providedIn: 'root'</span> registers at root without NgModule.</p>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Injection Tokens</div>
+          <div class="code-block"><span class="kw">const</span> <span class="cls">API_URL</span> = <span class="kw">new</span> <span class="cls">InjectionToken</span>&lt;<span class="kw">string</span>&gt;(<span class="str">'apiUrl'</span>);
+
+<span class="cmt">// provide:</span>
+{ provide: <span class="cls">API_URL</span>, useValue: <span class="str">'https://api.example.com'</span> }
+
+<span class="cmt">// inject:</span>
+<span class="fn">constructor</span>(@<span class="cls">Inject</span>(<span class="cls">API_URL</span>) <span class="kw">private</span> url: <span class="kw">string</span>) {}
+<span class="cmt">// or with inject() function:</span>
+<span class="kw">private</span> url = <span class="fn">inject</span>(<span class="cls">API_URL</span>);</div>
+        </div>
+        <div class="concept">
+          <div class="concept-label">inject() Function (v14+)</div>
+          <p>Use <span class="inline-code">inject()</span> in constructors, field initializers, and factory functions. Enables DI outside class constructors, great for composable logic in services and signals.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RxJS & Observables -->
+    <div class="topic-card" id="topic-2">
+      <div class="topic-card-header" onclick="toggleTopic(2)">
+        <div class="topic-icon">🔄</div>
+        <div class="topic-title">RxJS &amp; Observables</div>
+        <div class="topic-chevron">▼</div>
+      </div>
+      <div class="topic-body">
+        <div class="concept">
+          <div class="concept-label">Key Operators to Know Cold</div>
+          <p><span class="pill pill-blue">switchMap</span> cancels previous, use for search/navigation. <span class="pill pill-blue">mergeMap</span> concurrent, use for parallel requests. <span class="pill pill-blue">concatMap</span> sequential order guaranteed. <span class="pill pill-blue">exhaustMap</span> ignores new while active, use for submit buttons.</p>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Memory Leak Pattern</div>
+          <div class="code-block"><span class="cmt">// ✅ Best: async pipe (auto-unsubscribes)</span>
+<span class="cmt">// {{ data$ | async }}</span>
+
+<span class="cmt">// ✅ takeUntilDestroyed (v16+)</span>
+data$ = <span class="kw">this</span>.http.<span class="fn">get</span>(<span class="str">'/api'</span>).<span class="fn">pipe</span>(
+  <span class="fn">takeUntilDestroyed</span>(<span class="kw">this</span>.destroyRef)
+);
+
+<span class="cmt">// ✅ Manual unsubscribe in ngOnDestroy</span>
+<span class="kw">private</span> destroy$ = <span class="kw">new</span> <span class="cls">Subject</span>&lt;<span class="kw">void</span>&gt;();
+<span class="fn">ngOnDestroy</span>() { <span class="kw">this</span>.destroy$.<span class="fn">next</span>(); <span class="kw">this</span>.destroy$.<span class="fn">complete</span>(); }</div>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Subject Types</div>
+          <p><span class="inline-code">Subject</span>: no initial value, only future values. <span class="inline-code">BehaviorSubject</span>: holds current value, new subscribers get it immediately. <span class="inline-code">ReplaySubject(n)</span>: replays last n values. <span class="inline-code">AsyncSubject</span>: emits only last value on complete.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signals -->
+    <div class="topic-card" id="topic-3">
+      <div class="topic-card-header" onclick="toggleTopic(3)">
+        <div class="topic-icon">⚡</div>
+        <div class="topic-title">Signals (v16+)</div>
+        <div class="topic-chevron">▼</div>
+      </div>
+      <div class="topic-body">
+        <div class="concept">
+          <div class="concept-label">Core API</div>
+          <div class="code-block"><span class="kw">import</span> { signal, computed, effect } <span class="kw">from</span> <span class="str">'@angular/core'</span>;
+
+count = <span class="fn">signal</span>(0);
+doubled = <span class="fn">computed</span>(() => <span class="kw">this</span>.<span class="fn">count</span>() * 2);
+
+<span class="fn">effect</span>(() => {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'count changed:'</span>, <span class="kw">this</span>.<span class="fn">count</span>());
+});
+
+<span class="cmt">// mutate:</span>
+<span class="kw">this</span>.count.<span class="fn">set</span>(5);
+<span class="kw">this</span>.count.<span class="fn">update</span>(c => c + 1);</div>
+        </div>
+        <div class="concept">
+          <div class="concept-label">vs RxJS</div>
+          <p>Signals are <strong>synchronous</strong> and <strong>simpler</strong> for UI state. RxJS is still better for async streams, HTTP, and time-based logic. Use <span class="inline-code">toSignal()</span> and <span class="inline-code">toObservable()</span> to bridge them.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Routing -->
+    <div class="topic-card" id="topic-4">
+      <div class="topic-card-header" onclick="toggleTopic(4)">
+        <div class="topic-icon">🗺️</div>
+        <div class="topic-title">Routing &amp; Guards</div>
+        <div class="topic-chevron">▼</div>
+      </div>
+      <div class="topic-body">
+        <div class="concept">
+          <div class="concept-label">Functional Guards (v15+)</div>
+          <div class="code-block"><span class="cmt">// Modern — no class needed</span>
+<span class="kw">export const</span> authGuard: <span class="cls">CanActivateFn</span> = (route, state) => {
+  <span class="kw">const</span> auth = <span class="fn">inject</span>(<span class="cls">AuthService</span>);
+  <span class="kw">return</span> auth.isLoggedIn() || <span class="fn">inject</span>(<span class="cls">Router</span>).<span class="fn">createUrlTree</span>([<span class="str">'/login'</span>]);
+};
+
+<span class="cmt">// in routes:</span>
+{ path: <span class="str">'dashboard'</span>, canActivate: [authGuard] }</div>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Lazy Loading + Preloading</div>
+          <div class="code-block">{ path: <span class="str">'admin'</span>,
+  loadChildren: () => <span class="fn">import</span>(<span class="str">'./admin/routes'</span>)
+    .<span class="fn">then</span>(m => m.ADMIN_ROUTES) }
+
+<span class="cmt">// Preload all lazy routes in background:</span>
+<span class="cls">RouterModule</span>.<span class="fn">forRoot</span>(routes, {
+  preloadingStrategy: <span class="cls">PreloadAllModules</span>
+})</div>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Route Resolvers</div>
+          <p>Fetch data <em>before</em> the component activates. Use <span class="inline-code">ResolveFn</span> (functional) to return an observable or promise. Data is available via <span class="inline-code">ActivatedRoute.data</span>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- State Management -->
+    <div class="topic-card" id="topic-5">
+      <div class="topic-card-header" onclick="toggleTopic(5)">
+        <div class="topic-icon">🗂️</div>
+        <div class="topic-title">State Management</div>
+        <div class="topic-chevron">▼</div>
+      </div>
+      <div class="topic-body">
+        <div class="concept">
+          <div class="concept-label">NgRx Core Flow</div>
+          <p><strong>Action</strong> → <strong>Reducer</strong> (pure fn, returns new state) → <strong>Selector</strong> (memoized) → <strong>Effect</strong> (side effects like HTTP). Use <span class="inline-code">createAction</span>, <span class="inline-code">createReducer</span>, <span class="inline-code">createEffect</span>, <span class="inline-code">createSelector</span>.</p>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Selectors Are Key</div>
+          <div class="code-block"><span class="kw">const</span> selectFeature = (<span class="kw">state</span>: <span class="cls">AppState</span>) => state.users;
+<span class="kw">const</span> selectActiveUsers = <span class="fn">createSelector</span>(
+  selectFeature,
+  users => users.<span class="fn">filter</span>(u => u.active)
+);
+<span class="cmt">// Memoized — only recomputes when users slice changes</span></div>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Alternatives</div>
+          <p><span class="pill pill-blue">NgRx</span> for large teams, complex state. <span class="pill pill-green">NGXS</span> for less boilerplate. <span class="pill pill-amber">Akita</span> entity-focused. For smaller apps, a <strong>signal-based service</strong> with BehaviorSubject is often enough.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance -->
+    <div class="topic-card" id="topic-6">
+      <div class="topic-card-header" onclick="toggleTopic(6)">
+        <div class="topic-icon">🚀</div>
+        <div class="topic-title">Performance Optimization</div>
+        <div class="topic-chevron">▼</div>
+      </div>
+      <div class="topic-body">
+        <div class="concept">
+          <div class="concept-label">Key Techniques</div>
+          <p><span class="pill pill-blue">OnPush</span> change detection. <span class="pill pill-blue">trackBy</span> in *ngFor to prevent full DOM re-renders. <span class="pill pill-blue">Lazy loading</span> routes and modules. <span class="pill pill-blue">Virtual scrolling</span> with CDK for long lists. <span class="pill pill-blue">Deferred loading</span> with <span class="inline-code">@defer</span> (v17+).</p>
+        </div>
+        <div class="concept">
+          <div class="concept-label">trackBy Pattern</div>
+          <div class="code-block"><span class="cmt">&lt;!-- template --&gt;</span>
+<span class="str">*ngFor="let item of items; trackBy: trackById"</span>
+
+<span class="cmt">// component</span>
+<span class="fn">trackById</span>(index: <span class="kw">number</span>, item: <span class="cls">Item</span>) {
+  <span class="kw">return</span> item.id; <span class="cmt">// Angular only re-renders changed items</span>
+}</div>
+        </div>
+        <div class="concept">
+          <div class="concept-label">@defer (v17+)</div>
+          <div class="code-block"><span class="str">@defer (on viewport) {</span>
+  <span class="str">&lt;heavy-chart /&gt;</span>
+<span class="str">} @placeholder {</span>
+  <span class="str">&lt;skeleton-loader /&gt;</span>
+<span class="str">}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forms -->
+    <div class="topic-card" id="topic-7">
+      <div class="topic-card-header" onclick="toggleTopic(7)">
+        <div class="topic-icon">📝</div>
+        <div class="topic-title">Reactive Forms</div>
+        <div class="topic-chevron">▼</div>
+      </div>
+      <div class="topic-body">
+        <div class="concept">
+          <div class="concept-label">FormBuilder + Typed Forms (v14+)</div>
+          <div class="code-block">form = <span class="kw">this</span>.fb.<span class="fn">group</span>({
+  email: [<span class="str">''</span>, [<span class="cls">Validators</span>.required, <span class="cls">Validators</span>.email]],
+  password: [<span class="str">''</span>, <span class="cls">Validators</span>.minLength(8)]
+});
+<span class="cmt">// Fully typed: form.value.email is string | null</span>
+<span class="cmt">// form.controls.email.errors?.['email']</span></div>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Custom Validators</div>
+          <div class="code-block"><span class="kw">function</span> <span class="fn">noSpaces</span>(ctrl: <span class="cls">AbstractControl</span>) {
+  <span class="kw">return</span> ctrl.value?.includes(<span class="str">' '</span>)
+    ? { noSpaces: <span class="kw">true</span> } : <span class="kw">null</span>;
+}
+<span class="cmt">// Async validator returns Observable&lt;ValidationErrors | null&gt;</span></div>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Template vs Reactive</div>
+          <p>Prefer <strong>Reactive</strong> for complex forms, async validation, dynamic fields. Use <strong>Template-driven</strong> only for very simple, small forms.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- HTTP & Interceptors -->
+    <div class="topic-card" id="topic-8">
+      <div class="topic-card-header" onclick="toggleTopic(8)">
+        <div class="topic-icon">🌐</div>
+        <div class="topic-title">HTTP &amp; Interceptors</div>
+        <div class="topic-chevron">▼</div>
+      </div>
+      <div class="topic-body">
+        <div class="concept">
+          <div class="concept-label">Functional Interceptors (v15+)</div>
+          <div class="code-block"><span class="kw">export const</span> authInterceptor: <span class="cls">HttpInterceptorFn</span> = (req, next) => {
+  <span class="kw">const</span> token = <span class="fn">inject</span>(<span class="cls">AuthService</span>).<span class="fn">getToken</span>();
+  <span class="kw">const</span> authReq = req.<span class="fn">clone</span>({
+    headers: req.headers.<span class="fn">set</span>(<span class="str">'Authorization'</span>, <span class="str">`Bearer ${token}`</span>)
+  });
+  <span class="kw">return</span> <span class="fn">next</span>(authReq);
+};</div>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Error Handling Pattern</div>
+          <div class="code-block">this.http.<span class="fn">get</span>(<span class="str">'/api/data'</span>).<span class="fn">pipe</span>(
+  <span class="fn">retry</span>(2),
+  <span class="fn">catchError</span>(err => {
+    <span class="kw">if</span> (err.status === 401) <span class="kw">this</span>.auth.<span class="fn">logout</span>();
+    <span class="kw">return</span> <span class="fn">throwError</span>(() => err);
+  })
+)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Testing -->
+    <div class="topic-card" id="topic-9">
+      <div class="topic-card-header" onclick="toggleTopic(9)">
+        <div class="topic-icon">🧪</div>
+        <div class="topic-title">Testing</div>
+        <div class="topic-chevron">▼</div>
+      </div>
+      <div class="topic-body">
+        <div class="concept">
+          <div class="concept-label">Unit Testing Components</div>
+          <div class="code-block"><span class="fn">beforeEach</span>(<span class="kw">async</span> () => {
+  <span class="kw">await</span> <span class="cls">TestBed</span>.<span class="fn">configureTestingModule</span>({
+    imports: [<span class="cls">MyComponent</span>],
+    providers: [
+      { provide: <span class="cls">UserService</span>, useValue: mockUserService }
+    ]
+  }).<span class="fn">compileComponents</span>();
+  fixture = <span class="cls">TestBed</span>.<span class="fn">createComponent</span>(<span class="cls">MyComponent</span>);
+  component = fixture.componentInstance;
+});</div>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Key Assertions</div>
+          <p>Use <span class="inline-code">fixture.detectChanges()</span> after state changes. Query DOM with <span class="inline-code">fixture.debugElement.query(By.css('.btn'))</span>. Spy on services with <span class="inline-code">jest.spyOn()</span> or Jasmine's <span class="inline-code">spyOn()</span>. Test async with <span class="inline-code">fakeAsync</span> + <span class="inline-code">tick()</span>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Architecture -->
+    <div class="topic-card" id="topic-10">
+      <div class="topic-card-header" onclick="toggleTopic(10)">
+        <div class="topic-icon">🏛️</div>
+        <div class="topic-title">Architecture Patterns</div>
+        <div class="topic-chevron">▼</div>
+      </div>
+      <div class="topic-body">
+        <div class="concept">
+          <div class="concept-label">Smart vs Dumb Components</div>
+          <p><strong>Smart (container)</strong>: holds state, injects services, dispatches actions. <strong>Dumb (presentational)</strong>: only <span class="inline-code">@Input</span>/<span class="inline-code">@Output</span>, no service dependencies, fully reusable. Use OnPush on dumb components.</p>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Folder Structure</div>
+          <div class="code-block">src/app/
+  core/        <span class="cmt">← singleton services, guards, interceptors</span>
+  shared/      <span class="cmt">← reusable components, pipes, directives</span>
+  features/    <span class="cmt">← feature modules (lazy-loaded)</span>
+    dashboard/
+      components/
+      services/
+      store/</div>
+        </div>
+        <div class="concept">
+          <div class="concept-label">Micro-Frontend Ready</div>
+          <p>Use Module Federation (webpack) or Native Federation for splitting Angular apps into independently deployable units. Each MFE has its own routing, state, and deployment.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== QUIZ ===================== -->
+<div id="panel-quiz" class="panel">
+  <div class="panel-header">
+    <h2>Theory Mock Exam</h2>
+    <p>20 questions across all senior Angular topics. No time limit. Results and explanations at the end.</p>
+  </div>
+
+  <div class="quiz-progress">
+    <div class="progress-bar"><div class="progress-fill" id="qprogress" style="width:0%"></div></div>
+    <div class="progress-label" id="qprogress-label">0 / 20</div>
+  </div>
+
+  <div id="quiz-container">
+    <div class="quiz-card" id="quiz-card">
+      <div class="quiz-category" id="q-cat"></div>
+      <div class="quiz-q" id="q-text"></div>
+      <div class="quiz-options" id="q-options"></div>
+      <div class="quiz-explanation" id="q-explanation"></div>
+      <div class="quiz-nav">
+        <div id="q-score-info" style="font-size:13px;color:var(--fg3)"></div>
+        <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()" disabled>Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="score-container" style="display:none">
+    <div class="score-card">
+      <div class="score-ring">
+        <svg viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border)" stroke-width="10"/>
+          <circle id="score-arc" cx="60" cy="60" r="50" fill="none" stroke="var(--accent)" stroke-width="10"
+            stroke-dasharray="314" stroke-dashoffset="314" stroke-linecap="round"
+            style="transition: stroke-dashoffset 1s ease"/>
+        </svg>
+      </div>
+      <div class="score-big" id="score-pct"></div>
+      <div class="score-label" id="score-msg"></div>
+      <div class="score-breakdown">
+        <div class="score-stat"><div class="num" id="sc-correct" style="color:var(--green)">0</div><div class="lbl">Correct</div></div>
+        <div class="score-stat"><div class="num" id="sc-wrong" style="color:var(--red)">0</div><div class="lbl">Wrong</div></div>
+        <div class="score-stat"><div class="num" id="sc-total">20</div><div class="lbl">Total</div></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:24px;width:100%" onclick="restartQuiz()">Retake Exam</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CODING EXAM ===================== -->
+<div id="panel-coding" class="panel">
+  <div class="panel-header">
+    <h2>Coding Exam</h2>
+    <p>6 practical problems. Solve in the text area, then reveal the reference answer.</p>
+  </div>
+
+  <div class="exam-intro">
+    <span>⏱</span>
+    <span><strong>Suggested time:</strong> 90 minutes total. Treat each textarea as your editor. Think aloud as you type, cover edge cases, and write clean TypeScript. Expand a problem to start.</span>
+  </div>
+
+  <div class="coding-problems">
+
+    <!-- Problem 1 -->
+    <div class="problem-card" id="prob-0">
+      <div class="problem-header" onclick="toggleProblem(0)">
+        <div class="problem-num">1</div>
+        <div class="problem-title">Smart Search with Debounce</div>
+        <div class="problem-diff diff-easy">Easy</div>
+      </div>
+      <div class="problem-body">
+        <div class="problem-desc">
+          Build a search component with a text input that calls a <strong>UserService.search(query: string)</strong> method, debounced by 300ms. Cancel the previous request if a new one starts before it completes. Display a loading state and the results list.
+        </div>
+        <div class="problem-section-label">What to cover</div>
+        <ul class="criteria-list">
+          <li>Reactive form control or fromEvent on the input</li>
+          <li>debounceTime(300) + distinctUntilChanged()</li>
+          <li>switchMap to cancel previous HTTP call</li>
+          <li>Loading flag management</li>
+          <li>takeUntilDestroyed or async pipe to avoid leaks</li>
+        </ul>
+        <div class="problem-section-label">Your Answer</div>
+        <textarea class="editor-area" placeholder="// Write your component code here...
+// Include: component decorator, class, template, RxJS chain"></textarea>
+        <div class="solution-toggle">
+          <button class="btn btn-ghost" onclick="toggleSolution('sol-1')">Show Reference Answer</button>
+        </div>
+        <div class="solution-area" id="sol-1">
+          <div class="problem-section-label">Reference Answer</div>
+          <div class="code-block"><span class="kw">@Component</span>({
+  selector: <span class="str">'app-search'</span>,
+  standalone: <span class="kw">true</span>,
+  imports: [<span class="cls">ReactiveFormsModule</span>, <span class="cls">AsyncPipe</span>, <span class="cls">NgFor</span>, <span class="cls">NgIf</span>],
+  template: <span class="str">`
+    &lt;input [formControl]="searchCtrl" placeholder="Search..."&gt;
+    &lt;div *ngIf="loading"&gt;Loading...&lt;/div&gt;
+    &lt;ul&gt;
+      &lt;li *ngFor="let user of results"&gt;{{ user.name }}&lt;/li&gt;
+    &lt;/ul&gt;
+  `</span>
+})
+<span class="kw">export class</span> <span class="cls">SearchComponent</span> {
+  <span class="kw">private</span> destroyRef = <span class="fn">inject</span>(<span class="cls">DestroyRef</span>);
+  <span class="kw">private</span> userService = <span class="fn">inject</span>(<span class="cls">UserService</span>);
+
+  searchCtrl = <span class="kw">new</span> <span class="cls">FormControl</span>(<span class="str">''</span>);
+  results: <span class="cls">User</span>[] = [];
+  loading = <span class="kw">false</span>;
+
+  <span class="fn">constructor</span>() {
+    <span class="kw">this</span>.searchCtrl.valueChanges.<span class="fn">pipe</span>(
+      <span class="fn">debounceTime</span>(300),
+      <span class="fn">distinctUntilChanged</span>(),
+      <span class="fn">tap</span>(() => (<span class="kw">this</span>.loading = <span class="kw">true</span>)),
+      <span class="fn">switchMap</span>(q => <span class="kw">this</span>.userService.<span class="fn">search</span>(q ?? <span class="str">''</span>)),
+      <span class="fn">tap</span>(() => (<span class="kw">this</span>.loading = <span class="kw">false</span>)),
+      <span class="fn">takeUntilDestroyed</span>(<span class="kw">this</span>.destroyRef)
+    ).<span class="fn">subscribe</span>(res => (<span class="kw">this</span>.results = res));
+  }
+}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Problem 2 -->
+    <div class="problem-card" id="prob-1">
+      <div class="problem-header" onclick="toggleProblem(1)">
+        <div class="problem-num">2</div>
+        <div class="problem-title">Typed NgRx Feature Store</div>
+        <div class="problem-diff diff-medium">Medium</div>
+      </div>
+      <div class="problem-body">
+        <div class="problem-desc">
+          Implement a <strong>product feature</strong> using NgRx. Define the state, actions, reducer, and a selector. The state should hold a list of products, a loading flag, and an error. Include an action for loading products and one for when loading succeeds.
+        </div>
+        <div class="problem-section-label">What to cover</div>
+        <ul class="criteria-list">
+          <li>Typed state interface</li>
+          <li>createAction with props</li>
+          <li>createReducer with on()</li>
+          <li>createFeatureSelector + createSelector</li>
+          <li>Memoization benefit explained</li>
+        </ul>
+        <div class="problem-section-label">Your Answer</div>
+        <textarea class="editor-area" placeholder="// Define: Product interface, state, actions, reducer, selectors"></textarea>
+        <div class="solution-toggle">
+          <button class="btn btn-ghost" onclick="toggleSolution('sol-2')">Show Reference Answer</button>
+        </div>
+        <div class="solution-area" id="sol-2">
+          <div class="problem-section-label">Reference Answer</div>
+          <div class="code-block"><span class="cmt">// state</span>
+<span class="kw">interface</span> <span class="cls">ProductState</span> {
+  products: <span class="cls">Product</span>[];
+  loading: <span class="kw">boolean</span>;
+  error: <span class="kw">string</span> | <span class="kw">null</span>;
+}
+<span class="kw">const</span> initialState: <span class="cls">ProductState</span> = {
+  products: [], loading: <span class="kw">false</span>, error: <span class="kw">null</span>
+};
+
+<span class="cmt">// actions</span>
+<span class="kw">export const</span> loadProducts = <span class="fn">createAction</span>(<span class="str">'[Product] Load'</span>);
+<span class="kw">export const</span> loadProductsSuccess = <span class="fn">createAction</span>(
+  <span class="str">'[Product] Load Success'</span>,
+  <span class="fn">props</span>&lt;{ products: <span class="cls">Product</span>[] }&gt;()
+);
+<span class="kw">export const</span> loadProductsFailure = <span class="fn">createAction</span>(
+  <span class="str">'[Product] Load Failure'</span>,
+  <span class="fn">props</span>&lt;{ error: <span class="kw">string</span> }&gt;()
+);
+
+<span class="cmt">// reducer</span>
+<span class="kw">export const</span> productReducer = <span class="fn">createReducer</span>(
+  initialState,
+  <span class="fn">on</span>(loadProducts, s => ({ ...s, loading: <span class="kw">true</span>, error: <span class="kw">null</span> })),
+  <span class="fn">on</span>(loadProductsSuccess, (s, { products }) =>
+    ({ ...s, loading: <span class="kw">false</span>, products })),
+  <span class="fn">on</span>(loadProductsFailure, (s, { error }) =>
+    ({ ...s, loading: <span class="kw">false</span>, error }))
+);
+
+<span class="cmt">// selectors</span>
+<span class="kw">const</span> selectProductState = <span class="fn">createFeatureSelector</span>&lt;<span class="cls">ProductState</span>&gt;(<span class="str">'products'</span>);
+<span class="kw">export const</span> selectAllProducts = <span class="fn">createSelector</span>(selectProductState, s => s.products);
+<span class="kw">export const</span> selectLoading = <span class="fn">createSelector</span>(selectProductState, s => s.loading);</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Problem 3 -->
+    <div class="problem-card" id="prob-2">
+      <div class="problem-header" onclick="toggleProblem(2)">
+        <div class="problem-num">3</div>
+        <div class="problem-title">Custom Structural Directive</div>
+        <div class="problem-diff diff-medium">Medium</div>
+      </div>
+      <div class="problem-body">
+        <div class="problem-desc">
+          Write a custom structural directive called <strong>*appHasRole</strong> that shows an element only if the current user has one of the provided roles. It should accept a string array of roles and inject an <strong>AuthService</strong> that exposes <span class="inline-code">getUserRoles(): string[]</span>.
+        </div>
+        <div class="problem-section-label">What to cover</div>
+        <ul class="criteria-list">
+          <li>@Directive with selector [appHasRole]</li>
+          <li>@Input() using aliased selector name</li>
+          <li>ViewContainerRef + TemplateRef injection</li>
+          <li>createEmbeddedView vs clear()</li>
+          <li>Usage example in template</li>
+        </ul>
+        <div class="problem-section-label">Your Answer</div>
+        <textarea class="editor-area" placeholder="// Write the directive and show a template usage example"></textarea>
+        <div class="solution-toggle">
+          <button class="btn btn-ghost" onclick="toggleSolution('sol-3')">Show Reference Answer</button>
+        </div>
+        <div class="solution-area" id="sol-3">
+          <div class="problem-section-label">Reference Answer</div>
+          <div class="code-block"><span class="kw">@Directive</span>({ selector: <span class="str">'[appHasRole]'</span>, standalone: <span class="kw">true</span> })
+<span class="kw">export class</span> <span class="cls">HasRoleDirective</span> {
+  <span class="kw">private</span> auth = <span class="fn">inject</span>(<span class="cls">AuthService</span>);
+  <span class="kw">private</span> vc = <span class="fn">inject</span>(<span class="cls">ViewContainerRef</span>);
+  <span class="kw">private</span> tpl = <span class="fn">inject</span>(<span class="cls">TemplateRef</span>);
+  <span class="kw">private</span> hasView = <span class="kw">false</span>;
+
+  <span class="kw">@Input</span>() <span class="kw">set</span> <span class="fn">appHasRole</span>(roles: <span class="kw">string</span>[]) {
+    <span class="kw">const</span> userRoles = <span class="kw">this</span>.auth.<span class="fn">getUserRoles</span>();
+    <span class="kw">const</span> allowed = roles.<span class="fn">some</span>(r => userRoles.<span class="fn">includes</span>(r));
+
+    <span class="kw">if</span> (allowed && !<span class="kw">this</span>.hasView) {
+      <span class="kw">this</span>.vc.<span class="fn">createEmbeddedView</span>(<span class="kw">this</span>.tpl);
+      <span class="kw">this</span>.hasView = <span class="kw">true</span>;
+    } <span class="kw">else if</span> (!allowed && <span class="kw">this</span>.hasView) {
+      <span class="kw">this</span>.vc.<span class="fn">clear</span>();
+      <span class="kw">this</span>.hasView = <span class="kw">false</span>;
+    }
+  }
+}
+
+<span class="cmt">&lt;!-- Usage --&gt;</span>
+<span class="str">&lt;button *appHasRole="['admin', 'editor']"&gt;Delete&lt;/button&gt;</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Problem 4 -->
+    <div class="problem-card" id="prob-3">
+      <div class="problem-header" onclick="toggleProblem(3)">
+        <div class="problem-num">4</div>
+        <div class="problem-title">Auth Interceptor with Token Refresh</div>
+        <div class="problem-diff diff-hard">Hard</div>
+      </div>
+      <div class="problem-body">
+        <div class="problem-desc">
+          Write a functional HTTP interceptor that: attaches a bearer token to every request, and on a <strong>401 response</strong>, calls <span class="inline-code">AuthService.refreshToken()</span>, then retries the original request once with the new token. If refresh fails, logs the user out.
+        </div>
+        <div class="problem-section-label">What to cover</div>
+        <ul class="criteria-list">
+          <li>HttpInterceptorFn signature</li>
+          <li>catchError on the response</li>
+          <li>switchMap into refreshToken() observable</li>
+          <li>Cloning the request with the new token</li>
+          <li>catchError on refresh failure → logout</li>
+        </ul>
+        <div class="problem-section-label">Your Answer</div>
+        <textarea class="editor-area" placeholder="// Write the full interceptor function"></textarea>
+        <div class="solution-toggle">
+          <button class="btn btn-ghost" onclick="toggleSolution('sol-4')">Show Reference Answer</button>
+        </div>
+        <div class="solution-area" id="sol-4">
+          <div class="problem-section-label">Reference Answer</div>
+          <div class="code-block"><span class="kw">export const</span> authInterceptor: <span class="cls">HttpInterceptorFn</span> = (req, next) => {
+  <span class="kw">const</span> auth = <span class="fn">inject</span>(<span class="cls">AuthService</span>);
+
+  <span class="kw">const</span> <span class="fn">addToken</span> = (r: <span class="cls">HttpRequest</span>&lt;<span class="kw">unknown</span>&gt;) =>
+    r.<span class="fn">clone</span>({ setHeaders: { Authorization: <span class="str">`Bearer ${auth.getToken()}`</span> } });
+
+  <span class="kw">return</span> <span class="fn">next</span>(<span class="fn">addToken</span>(req)).<span class="fn">pipe</span>(
+    <span class="fn">catchError</span>(err => {
+      <span class="kw">if</span> (err <span class="kw">instanceof</span> <span class="cls">HttpErrorResponse</span> && err.status === 401) {
+        <span class="kw">return</span> auth.<span class="fn">refreshToken</span>().<span class="fn">pipe</span>(
+          <span class="fn">switchMap</span>(() => <span class="fn">next</span>(<span class="fn">addToken</span>(req))),
+          <span class="fn">catchError</span>(refreshErr => {
+            auth.<span class="fn">logout</span>();
+            <span class="kw">return</span> <span class="fn">throwError</span>(() => refreshErr);
+          })
+        );
+      }
+      <span class="kw">return</span> <span class="fn">throwError</span>(() => err);
+    })
+  );
+};</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Problem 5 -->
+    <div class="problem-card" id="prob-4">
+      <div class="problem-header" onclick="toggleProblem(4)">
+        <div class="problem-num">5</div>
+        <div class="problem-title">Signal-Based Counter Service</div>
+        <div class="problem-diff diff-easy">Easy</div>
+      </div>
+      <div class="problem-body">
+        <div class="problem-desc">
+          Create a <strong>CartService</strong> using Angular Signals. It should hold a list of cart items, expose a computed signal for the total price, and have methods to add, remove, and clear items. Show a component consuming it.
+        </div>
+        <div class="problem-section-label">What to cover</div>
+        <ul class="criteria-list">
+          <li>signal() for the items array</li>
+          <li>computed() for total</li>
+          <li>update() for immutable array changes</li>
+          <li>Component reads signals directly in template</li>
+          <li>providedIn: 'root'</li>
+        </ul>
+        <div class="problem-section-label">Your Answer</div>
+        <textarea class="editor-area" placeholder="// Write CartService and a CartSummaryComponent"></textarea>
+        <div class="solution-toggle">
+          <button class="btn btn-ghost" onclick="toggleSolution('sol-5')">Show Reference Answer</button>
+        </div>
+        <div class="solution-area" id="sol-5">
+          <div class="problem-section-label">Reference Answer</div>
+          <div class="code-block"><span class="kw">@Injectable</span>({ providedIn: <span class="str">'root'</span> })
+<span class="kw">export class</span> <span class="cls">CartService</span> {
+  <span class="kw">private</span> _items = <span class="fn">signal</span>&lt;<span class="cls">CartItem</span>[]&gt;([]);
+
+  items = <span class="kw">this</span>._items.<span class="fn">asReadonly</span>();
+  total = <span class="fn">computed</span>(() =>
+    <span class="kw">this</span>._items().<span class="fn">reduce</span>((sum, i) => sum + i.price * i.qty, 0)
+  );
+  count = <span class="fn">computed</span>(() => <span class="kw">this</span>._items().<span class="fn">length</span>);
+
+  <span class="fn">add</span>(item: <span class="cls">CartItem</span>) {
+    <span class="kw">this</span>._items.<span class="fn">update</span>(items => [...items, item]);
+  }
+  <span class="fn">remove</span>(id: <span class="kw">number</span>) {
+    <span class="kw">this</span>._items.<span class="fn">update</span>(items => items.<span class="fn">filter</span>(i => i.id !== id));
+  }
+  <span class="fn">clear</span>() { <span class="kw">this</span>._items.<span class="fn">set</span>([]); }
+}
+
+<span class="cmt">// Component</span>
+<span class="kw">@Component</span>({ template: <span class="str">`
+  &lt;p&gt;Items: {{ cart.count() }}&lt;/p&gt;
+  &lt;p&gt;Total: {{ cart.total() | currency }}&lt;/p&gt;
+  &lt;button (click)="cart.clear()"&gt;Clear&lt;/button&gt;
+`</span> })
+<span class="kw">export class</span> <span class="cls">CartSummaryComponent</span> {
+  cart = <span class="fn">inject</span>(<span class="cls">CartService</span>);
+}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Problem 6 -->
+    <div class="problem-card" id="prob-5">
+      <div class="problem-header" onclick="toggleProblem(5)">
+        <div class="problem-num">6</div>
+        <div class="problem-title">Dynamic Form Builder</div>
+        <div class="problem-diff diff-hard">Hard</div>
+      </div>
+      <div class="problem-body">
+        <div class="problem-desc">
+          Build a <strong>DynamicFormComponent</strong> that accepts a JSON config array of field definitions (type: text | select | checkbox, label, validators) and dynamically builds a typed reactive form. Emit the form value on submit.
+        </div>
+        <div class="problem-section-label">What to cover</div>
+        <ul class="criteria-list">
+          <li>FieldConfig interface definition</li>
+          <li>Building FormGroup dynamically in ngOnInit</li>
+          <li>Conditional template: *ngSwitch on field type</li>
+          <li>Error display per field</li>
+          <li>@Output() formSubmit with typed value</li>
+        </ul>
+        <div class="problem-section-label">Your Answer</div>
+        <textarea class="editor-area" placeholder="// Write FieldConfig interface, DynamicFormComponent class + template"></textarea>
+        <div class="solution-toggle">
+          <button class="btn btn-ghost" onclick="toggleSolution('sol-6')">Show Reference Answer</button>
+        </div>
+        <div class="solution-area" id="sol-6">
+          <div class="problem-section-label">Reference Answer</div>
+          <div class="code-block"><span class="kw">interface</span> <span class="cls">FieldConfig</span> {
+  name: <span class="kw">string</span>;
+  label: <span class="kw">string</span>;
+  type: <span class="str">'text'</span> | <span class="str">'select'</span> | <span class="str">'checkbox'</span>;
+  options?: { value: <span class="kw">string</span>; label: <span class="kw">string</span> }[];
+  validators?: <span class="cls">ValidatorFn</span>[];
+  defaultValue?: <span class="kw">unknown</span>;
+}
+
+<span class="kw">@Component</span>({
+  selector: <span class="str">'app-dynamic-form'</span>,
+  standalone: <span class="kw">true</span>,
+  imports: [<span class="cls">ReactiveFormsModule</span>, <span class="cls">NgFor</span>, <span class="cls">NgSwitch</span>, <span class="cls">NgSwitchCase</span>, <span class="cls">NgIf</span>],
+  template: <span class="str">`
+    &lt;form [formGroup]="form" (ngSubmit)="submit()"&gt;
+      &lt;div *ngFor="let f of fields"&gt;
+        &lt;label&gt;{{ f.label }}&lt;/label&gt;
+        &lt;ng-container [ngSwitch]="f.type"&gt;
+          &lt;input *ngSwitchCase="'text'" [formControlName]="f.name"&gt;
+          &lt;select *ngSwitchCase="'select'" [formControlName]="f.name"&gt;
+            &lt;option *ngFor="let o of f.options" [value]="o.value"&gt;{{ o.label }}&lt;/option&gt;
+          &lt;/select&gt;
+          &lt;input *ngSwitchCase="'checkbox'" type="checkbox" [formControlName]="f.name"&gt;
+        &lt;/ng-container&gt;
+        &lt;span *ngIf="form.get(f.name)?.invalid && form.get(f.name)?.touched"
+              style="color:red"&gt;Required&lt;/span&gt;
+      &lt;/div&gt;
+      &lt;button type="submit" [disabled]="form.invalid"&gt;Submit&lt;/button&gt;
+    &lt;/form&gt;
+  `</span>
+})
+<span class="kw">export class</span> <span class="cls">DynamicFormComponent</span> <span class="kw">implements</span> <span class="cls">OnInit</span> {
+  <span class="kw">@Input</span>() fields: <span class="cls">FieldConfig</span>[] = [];
+  <span class="kw">@Output</span>() formSubmit = <span class="kw">new</span> <span class="cls">EventEmitter</span>&lt;<span class="cls">Record</span>&lt;<span class="kw">string</span>, <span class="kw">unknown</span>&gt;&gt;();
+  <span class="kw">private</span> fb = <span class="fn">inject</span>(<span class="cls">FormBuilder</span>);
+  form!: <span class="cls">FormGroup</span>;
+
+  <span class="fn">ngOnInit</span>() {
+    <span class="kw">const</span> controls = <span class="kw">this</span>.fields.<span class="fn">reduce</span>((acc, f) => ({
+      ...acc, [f.name]: [f.defaultValue ?? <span class="str">''</span>, f.validators ?? []]
+    }), {});
+    <span class="kw">this</span>.form = <span class="kw">this</span>.fb.<span class="fn">group</span>(controls);
+  }
+
+  <span class="fn">submit</span>() {
+    <span class="kw">if</span> (<span class="kw">this</span>.form.valid) <span class="kw">this</span>.formSubmit.<span class="fn">emit</span>(<span class="kw">this</span>.form.value);
+  }
+}</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== CHEATSHEET ===================== -->
+<div id="panel-cheatsheet" class="panel">
+  <div class="panel-header">
+    <h2>Quick Cheatsheet</h2>
+    <p>Key APIs and patterns at a glance for the interview day.</p>
+  </div>
+  <div class="cheat-grid">
+
+    <div class="cheat-card">
+      <div class="cheat-title">RxJS Operators</div>
+      <div class="cheat-row"><span class="cheat-key">switchMap</span><span class="cheat-val">Cancel prev, use for search/nav</span></div>
+      <div class="cheat-row"><span class="cheat-key">mergeMap</span><span class="cheat-val">Concurrent, parallel requests</span></div>
+      <div class="cheat-row"><span class="cheat-key">concatMap</span><span class="cheat-val">Sequential, order preserved</span></div>
+      <div class="cheat-row"><span class="cheat-key">exhaustMap</span><span class="cheat-val">Ignore new while active, for submit</span></div>
+      <div class="cheat-row"><span class="cheat-key">debounceTime</span><span class="cheat-val">Wait for silence, use for input</span></div>
+      <div class="cheat-row"><span class="cheat-key">distinctUntilChanged</span><span class="cheat-val">Skip duplicate consecutive values</span></div>
+      <div class="cheat-row"><span class="cheat-key">takeUntilDestroyed</span><span class="cheat-val">Auto-unsubscribe (v16+)</span></div>
+      <div class="cheat-row"><span class="cheat-key">shareReplay(1)</span><span class="cheat-val">Cache last emission for late subs</span></div>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-title">Angular Decorators</div>
+      <div class="cheat-row"><span class="cheat-key">@Component</span><span class="cheat-val">Declares a component, has template</span></div>
+      <div class="cheat-row"><span class="cheat-key">@Directive</span><span class="cheat-val">Adds behavior to existing element</span></div>
+      <div class="cheat-row"><span class="cheat-key">@Pipe</span><span class="cheat-val">Transform values in templates</span></div>
+      <div class="cheat-row"><span class="cheat-key">@Injectable</span><span class="cheat-val">Marks class for DI, set providedIn</span></div>
+      <div class="cheat-row"><span class="cheat-key">@Input()</span><span class="cheat-val">Parent → child data flow</span></div>
+      <div class="cheat-row"><span class="cheat-key">@Output()</span><span class="cheat-val">Child → parent events via EventEmitter</span></div>
+      <div class="cheat-row"><span class="cheat-key">@ViewChild</span><span class="cheat-val">Access child component or DOM ref</span></div>
+      <div class="cheat-row"><span class="cheat-key">@HostListener</span><span class="cheat-val">Listen to host element events</span></div>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-title">Signals API</div>
+      <div class="cheat-row"><span class="cheat-key">signal(val)</span><span class="cheat-val">Create a writable signal</span></div>
+      <div class="cheat-row"><span class="cheat-key">.set(v)</span><span class="cheat-val">Replace value</span></div>
+      <div class="cheat-row"><span class="cheat-key">.update(fn)</span><span class="cheat-val">Update based on current value</span></div>
+      <div class="cheat-row"><span class="cheat-key">.asReadonly()</span><span class="cheat-val">Expose read-only from service</span></div>
+      <div class="cheat-row"><span class="cheat-key">computed(fn)</span><span class="cheat-val">Derived signal, auto-tracks deps</span></div>
+      <div class="cheat-row"><span class="cheat-key">effect(fn)</span><span class="cheat-val">Side effects when signals change</span></div>
+      <div class="cheat-row"><span class="cheat-key">toSignal(obs$)</span><span class="cheat-val">Observable → Signal bridge</span></div>
+      <div class="cheat-row"><span class="cheat-key">toObservable(sig)</span><span class="cheat-val">Signal → Observable bridge</span></div>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-title">Router</div>
+      <div class="cheat-row"><span class="cheat-key">CanActivateFn</span><span class="cheat-val">Guard: block route access</span></div>
+      <div class="cheat-row"><span class="cheat-key">CanDeactivateFn</span><span class="cheat-val">Guard: warn before leaving</span></div>
+      <div class="cheat-row"><span class="cheat-key">ResolveFn</span><span class="cheat-val">Fetch data before component loads</span></div>
+      <div class="cheat-row"><span class="cheat-key">loadChildren</span><span class="cheat-val">Lazy-load a route module/config</span></div>
+      <div class="cheat-row"><span class="cheat-key">router.navigate</span><span class="cheat-val">Imperative navigation</span></div>
+      <div class="cheat-row"><span class="cheat-key">[routerLink]</span><span class="cheat-val">Declarative navigation in template</span></div>
+      <div class="cheat-row"><span class="cheat-key">ActivatedRoute</span><span class="cheat-val">Access route params, query, data</span></div>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-title">Change Detection</div>
+      <div class="cheat-row"><span class="cheat-key">Default</span><span class="cheat-val">Checks whole tree every cycle</span></div>
+      <div class="cheat-row"><span class="cheat-key">OnPush</span><span class="cheat-val">Only on @Input change or event</span></div>
+      <div class="cheat-row"><span class="cheat-key">markForCheck()</span><span class="cheat-val">Flag OnPush component to recheck</span></div>
+      <div class="cheat-row"><span class="cheat-key">detectChanges()</span><span class="cheat-val">Force immediate check</span></div>
+      <div class="cheat-row"><span class="cheat-key">detach()</span><span class="cheat-val">Remove from CD tree entirely</span></div>
+      <div class="cheat-row"><span class="cheat-key">async pipe</span><span class="cheat-val">Auto triggers CD + unsubscribes</span></div>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-title">Common Interview Q&amp;A</div>
+      <div class="cheat-row"><span class="cheat-key">Zone.js</span><span class="cheat-val">Patches async APIs to trigger CD; zoneless coming in v18+</span></div>
+      <div class="cheat-row"><span class="cheat-key">forRoot vs forChild</span><span class="cheat-val">forRoot: singleton services once; forChild: feature routes</span></div>
+      <div class="cheat-row"><span class="cheat-key">Pure pipe</span><span class="cheat-val">Only runs on input reference change (default)</span></div>
+      <div class="cheat-row"><span class="cheat-key">Impure pipe</span><span class="cheat-val">Runs every CD cycle; avoid for perf</span></div>
+      <div class="cheat-row"><span class="cheat-key">ng-content</span><span class="cheat-val">Content projection slot in component</span></div>
+      <div class="cheat-row"><span class="cheat-key">ng-template</span><span class="cheat-val">Lazy template, rendered by directive or viewContainerRef</span></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ---- Tab switching ----
+function switchTab(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ---- Reviewer topics ----
+function toggleTopic(i) {
+  const card = document.getElementById('topic-' + i);
+  card.classList.toggle('open');
+}
+
+// ---- Coding problems ----
+function toggleProblem(i) {
+  const card = document.getElementById('prob-' + i);
+  card.classList.toggle('open');
+}
+function toggleSolution(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('show');
+  const btn = el.previousElementSibling.querySelector('button');
+  btn.textContent = el.classList.contains('show') ? 'Hide Reference Answer' : 'Show Reference Answer';
+}
+
+// ---- Quiz ----
+const questions = [
+  { cat: 'Change Detection', q: 'Which ChangeDetectionStrategy only triggers re-render when an @Input reference changes, an event fires, or an observable emits?', opts: ['Default', 'OnPush', 'OnChanges', 'OnDemand'], correct: 1, exp: 'OnPush limits change detection to these specific triggers, dramatically improving performance in large component trees. The component must use immutable data patterns.' },
+  { cat: 'RxJS', q: 'You have a search input. Which RxJS operator should you use to cancel the previous HTTP request when a new search term is typed?', opts: ['mergeMap', 'concatMap', 'switchMap', 'exhaustMap'], correct: 2, exp: 'switchMap cancels the previous inner observable and subscribes to the new one. Perfect for search, navigation, and any scenario where only the latest request matters.' },
+  { cat: 'RxJS', q: 'A user clicks a "Submit Order" button. You want to ignore any additional clicks while the first HTTP request is in flight. Which operator do you use?', opts: ['switchMap', 'mergeMap', 'concatMap', 'exhaustMap'], correct: 3, exp: 'exhaustMap ignores new source emissions while the current inner observable is active. Ideal for submit buttons to prevent duplicate requests.' },
+  { cat: 'Dependency Injection', q: 'What does providedIn: "root" do when used in @Injectable?', opts: ['Creates a new instance per component', 'Provides the service in a lazy-loaded module', 'Registers a singleton at the root injector level', 'Makes the service available only in templates'], correct: 2, exp: 'providedIn: "root" registers the service at the root injector, making it a singleton across the entire application without needing to list it in any NgModule providers array.' },
+  { cat: 'Signals', q: 'Which Signals API creates a value derived from other signals and only recomputes when its dependencies change?', opts: ['signal()', 'effect()', 'computed()', 'toSignal()'], correct: 2, exp: 'computed() creates a memoized, derived signal. It automatically tracks which signals it reads and only recomputes when any of those dependencies change — similar to how selectors work in NgRx.' },
+  { cat: 'Lifecycle Hooks', q: 'Which lifecycle hook is the best place to unsubscribe from observables and clean up resources?', opts: ['ngOnInit', 'ngOnDestroy', 'ngAfterViewInit', 'ngOnChanges'], correct: 1, exp: 'ngOnDestroy fires just before Angular destroys the component. It is the correct place to call unsubscribe(), complete subjects, and remove event listeners to prevent memory leaks.' },
+  { cat: 'Routing', q: 'Which guard type is used in Angular 15+ without needing a class, just a plain function?', opts: ['CanActivate class', 'CanActivateFn', 'RouteGuard', 'RouterInterceptor'], correct: 1, exp: 'Angular 15+ introduced functional guards. CanActivateFn is just a typed function that can inject services using inject() and return boolean, UrlTree, or an observable/promise of either.' },
+  { cat: 'Performance', q: 'What is the purpose of trackBy in *ngFor?', opts: ['To sort items in the list', 'To filter items before rendering', 'To help Angular identify which items changed so it avoids full DOM re-render', 'To paginate items automatically'], correct: 2, exp: 'Without trackBy, Angular recreates the DOM for all items when the array reference changes. trackBy returns a unique identifier per item, so Angular only re-renders the items that actually changed.' },
+  { cat: 'Forms', q: 'In Angular 14+ typed reactive forms, what type does form.value.email have when the control is defined as FormControl<string>?', opts: ['string', 'string | null', 'any', 'unknown'], correct: 1, exp: 'Angular 14+ typed forms account for the fact that disabled controls are excluded from .value, so the type is string | null. Use form.getRawValue() to get string without null.' },
+  { cat: 'HTTP', q: 'You want to add an Authorization header to every outgoing HTTP request. What is the modern Angular approach?', opts: ['Override HttpClient directly', 'Use a functional HttpInterceptorFn', 'Add headers manually in every service method', 'Use a route resolver'], correct: 1, exp: 'Angular 15+ functional interceptors (HttpInterceptorFn) replace class-based interceptors. They are simpler, support inject(), and are registered via withInterceptors() in provideHttpClient().' },
+  { cat: 'Architecture', q: 'What is the main difference between a "Smart" (container) component and a "Dumb" (presentational) component?', opts: ['Smart components use OnPush; dumb use Default', 'Smart components inject services and hold state; dumb components only use @Input and @Output', 'Smart components are standalone; dumb components use NgModule', 'Smart components render faster'], correct: 1, exp: 'Smart/container components connect to services, the store, or the router. Dumb/presentational components only receive data via @Input and emit events via @Output, making them easily testable and reusable.' },
+  { cat: 'RxJS', q: 'Which Subject type gives a new subscriber the most recent value immediately upon subscription?', opts: ['Subject', 'BehaviorSubject', 'ReplaySubject(0)', 'AsyncSubject'], correct: 1, exp: 'BehaviorSubject requires an initial value and emits it immediately to new subscribers. This makes it ideal for representing current state (e.g., current user, current theme) in a service.' },
+  { cat: 'Change Detection', q: 'What happens when you call ChangeDetectorRef.detach() on a component?', opts: ['The component is destroyed', 'The component is removed from the change detection tree until reattached', 'The component stops receiving @Input updates permanently', 'Zone.js is disabled globally'], correct: 1, exp: 'detach() removes the component from the CD tree, meaning Angular will never check it automatically. You must call detectChanges() manually to update the view. Useful for high-frequency update scenarios.' },
+  { cat: 'Signals', q: 'What function bridges a Signal back to an Observable?', opts: ['fromSignal()', 'signalToObs()', 'toObservable()', 'asObservable()'], correct: 2, exp: 'toObservable() from @angular/core/rxjs-interop converts a Signal to an Observable. The complementary function toSignal() converts an Observable to a Signal.' },
+  { cat: 'Testing', q: 'In Angular unit tests, which method must you call after modifying component state to trigger change detection?', opts: ['fixture.render()', 'component.update()', 'fixture.detectChanges()', 'TestBed.refresh()'], correct: 2, exp: 'fixture.detectChanges() triggers Angular change detection on the component fixture. Always call it after setting component properties or after async operations resolve in tests.' },
+  { cat: 'Routing', q: 'A route resolver vs. a route guard: what is the key distinction?', opts: ['Guards block navigation; resolvers fetch data before the component activates', 'Guards fetch data; resolvers block navigation', 'They are the same, just different names', 'Resolvers only work with lazy-loaded routes'], correct: 0, exp: 'Guards (CanActivate, CanDeactivate) control whether navigation proceeds. Resolvers (ResolveFn) run after guards pass and fetch data before the target component is instantiated, making it available via ActivatedRoute.data.' },
+  { cat: 'Architecture', q: 'In which folder of a standard Angular project structure would you place singleton services, guards, and interceptors that are used app-wide?', opts: ['shared/', 'features/', 'core/', 'services/'], correct: 2, exp: 'The core/ folder holds singleton services, guards, interceptors, and base HTTP services. It is imported once in AppModule or the root config. The shared/ folder holds reusable components, directives, and pipes.' },
+  { cat: 'Performance', q: 'What is the Angular 17+ feature that lets you defer loading of heavy components until they scroll into the viewport?', opts: ['@lazy', '@defer', 'ng-lazy', 'loadComponent()'], correct: 1, exp: '@defer is a template syntax introduced in Angular 17 that enables declarative lazy loading of components. @defer (on viewport) only loads and renders the component when the placeholder scrolls into view.' },
+  { cat: 'Forms', q: 'Which type of Angular form is better suited for complex, dynamic forms with async validation?', opts: ['Template-driven forms', 'Reactive forms', 'Schema-driven forms', 'Signal forms'], correct: 1, exp: 'Reactive forms are defined programmatically, giving full control for dynamic field creation, async validators, and complex cross-field validation logic. Template-driven forms are simpler but harder to test and extend.' },
+  { cat: 'DI', q: 'The inject() function can be called in which of the following locations?', opts: ['Only inside constructor()', 'Inside constructor(), field initializers, and factory functions during injection context', 'Only inside ngOnInit()', 'Anywhere in a component method'], correct: 1, exp: 'inject() is valid during the injection context: constructor(), field initializers, and functions called from an injection context like factory functions. Calling it outside these contexts (e.g., in ngOnInit or a click handler) throws a runtime error.' }
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+let wrong = 0;
+
+function renderQuestion() {
+  const q = questions[current];
+  document.getElementById('q-cat').textContent = q.cat;
+  document.getElementById('q-text').textContent = q.q;
+  const opts = document.getElementById('q-options');
+  opts.innerHTML = '';
+  q.opts.forEach((o, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.innerHTML = `<span class="opt-letter">${String.fromCharCode(65+i)}</span><span>${o}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    opts.appendChild(btn);
+  });
+  document.getElementById('q-explanation').className = 'quiz-explanation';
+  document.getElementById('btn-next').disabled = true;
+  document.getElementById('q-score-info').textContent = '';
+  answered = false;
+  updateProgress();
+}
+
+function selectAnswer(i) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const btns = document.querySelectorAll('.quiz-option');
+  btns.forEach((b, idx) => {
+    b.disabled = true;
+    if (idx === q.correct) b.classList.add('correct');
+    else if (idx === i) b.classList.add('wrong');
+  });
+  const exp = document.getElementById('q-explanation');
+  exp.textContent = q.exp;
+  exp.classList.add('show');
+  if (i === q.correct) {
+    score++;
+    document.getElementById('q-score-info').textContent = '✓ Correct';
+    document.getElementById('q-score-info').style.color = 'var(--green)';
+  } else {
+    wrong++;
+    document.getElementById('q-score-info').textContent = '✗ Incorrect';
+    document.getElementById('q-score-info').style.color = 'var(--red)';
+  }
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.disabled = false;
+  nextBtn.textContent = current < questions.length - 1 ? 'Next →' : 'See Results';
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= questions.length) {
+    showScore();
+    return;
+  }
+  renderQuestion();
+}
+
+function updateProgress() {
+  const pct = (current / questions.length) * 100;
+  document.getElementById('qprogress').style.width = pct + '%';
+  document.getElementById('qprogress-label').textContent = current + ' / ' + questions.length;
+}
+
+function showScore() {
+  document.getElementById('quiz-container').style.display = 'none';
+  document.getElementById('score-container').style.display = 'block';
+  const pct = Math.round((score / questions.length) * 100);
+  document.getElementById('score-pct').textContent = pct + '%';
+  document.getElementById('sc-correct').textContent = score;
+  document.getElementById('sc-wrong').textContent = wrong;
+  document.getElementById('sc-total').textContent = questions.length;
+  let msg = pct >= 85 ? '🔥 Senior-ready!' : pct >= 65 ? '📈 Getting there — review weak areas' : '📚 More study needed';
+  document.getElementById('score-msg').textContent = msg;
+  const circumference = 2 * Math.PI * 50;
+  const offset = circumference - (pct / 100) * circumference;
+  setTimeout(() => {
+    document.getElementById('score-arc').style.strokeDashoffset = offset;
+  }, 100);
+  document.getElementById('qprogress').style.width = '100%';
+  document.getElementById('qprogress-label').textContent = questions.length + ' / ' + questions.length;
+}
+
+function restartQuiz() {
+  current = 0; score = 0; wrong = 0; answered = false;
+  document.getElementById('score-container').style.display = 'none';
+  document.getElementById('quiz-container').style.display = 'block';
+  document.getElementById('score-arc').style.strokeDashoffset = 314;
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
